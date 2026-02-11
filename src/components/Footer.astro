@@ -1,0 +1,42 @@
+---
+// Footer component — Simple, minimal footer with copyright and social links
+// No props needed for this component (it's always the same across all pages)
+
+// Get the current year dynamically so copyright stays current
+// new Date().getFullYear() returns the current year as a number (e.g., 2026)
+const currentYear = new Date().getFullYear();
+---
+
+<!-- Footer with minimal styling, centered content, and subtle border -->
+<footer class="border-t border-gray-100 mt-auto">
+  <!-- max-w-3xl + mx-auto centers content to match header width -->
+  <div class="max-w-3xl mx-auto px-6 py-8">
+    <!-- flex with justify-between: copyright left, social links right -->
+    <!-- items-center vertically aligns content -->
+    <div class="flex items-center justify-between text-sm text-gray-500">
+      <p>
+        © {currentYear} Luis Monbo
+      </p>
+
+      <!-- Social links with consistent spacing -->
+      <div class="flex items-center gap-6">
+        <a
+          href="https://github.com/luismonbo"
+          class="hover:text-gray-900 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+        <a
+          href="https://threads.com/luismonbo"
+          class="hover:text-gray-900 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Threads
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
