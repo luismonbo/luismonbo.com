@@ -1,0 +1,53 @@
+---
+// NavLink interface — defines the shape of each navigation item
+// Similar to a Python TypedDict or Rust struct
+interface NavLink {
+  label: string;
+  href: string;
+}
+
+// The links we want in the nav
+// Typed as NavLink[] (an array of NavLink objects)
+const navLinks: NavLink[] = [
+  { label: "About", href: "/about" },
+  { label: "Writing", href: "/writing" },
+  { label: "Photography", href: "/photography" },
+  { label: "AI", href: "/ai" },
+];
+
+// Astro.url.pathname gives us the current page path (e.g., "/about")
+// We use this to highlight the active nav link
+const currentPath = Astro.url.pathname;
+
+// TEMPLATE NOTES (for learning):
+// - .map() iterates over navLinks and renders one <a> per item
+//   Python equivalent: [render(link) for link in nav_links]
+// - The ternary (condition ? a : b) sets active vs inactive styles
+// - startsWith("/about") matches both "/about" and "/about/something"
+//   We don't use startsWith("/") for home because that matches everything
+---
+
+<!-- Sticky header with frosted glass effect (backdrop-blur + semi-transparent bg) -->
+<header class="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-gray-100">
+  <!-- max-w-3xl + mx-auto centers content; flex with justify-between pushes name left, links right -->
+  <nav class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between w-full">
+    <a href="/" class="text-lg font-semibold tracking-tight text-gray-900 hover:text-gray-600 transition-colors">
+      luismonbo
+    </a>
+
+    <!-- gap-8 spaces the links; text-sm keeps them understated -->
+    <div class="flex items-center gap-8 text-sm">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class={currentPath.startsWith(link.href)
+            ? "font-medium text-gray-900"
+            : "text-gray-500 hover:text-gray-900 transition-colors"
+          }
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  </nav>
+</header>
