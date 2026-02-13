@@ -22,26 +22,36 @@ function formatDate(date: Date): string {
 }
 ---
 
-<Layout title="Writing · Luis Monbo">
+<Layout
+	title="Writing · luismonbo"
+	description="Essays on politics, philosophy, and technology. I write to clarify my thinking and occasionally share what I learn."
+>
 	<div class="max-w-none">
-		<h1 class="text-4xl font-bold tracking-tight mb-4">Writing</h1>
+		<!-- TYPOGRAPHY: Larger title -->
+		<!-- SPACING: More space after title (mb-6) -->
+		<h1 class="text-5xl font-bold tracking-tight mb-6">Writing</h1>
 
-		<p class="text-lg text-gray-700 leading-relaxed mb-12">
+		<!-- TYPOGRAPHY: Larger intro text -->
+		<!-- SPACING: More breathing room (mb-16) -->
+		<p class="text-xl text-gray-700 leading-relaxed mb-16">
 			Essays on politics, philosophy, and technology. I write to clarify my thinking and occasionally share what I learn.
 		</p>
 
 		<!-- Posts list -->
-		<div class="space-y-10">
+		<!-- SPACING: More space between posts (space-y-12 instead of space-y-10) -->
+		<div class="space-y-12">
 			{publishedPosts.map(post => (
 				<article class="group">
 					<a href={`/writing/${post.slug}`} class="block">
 						<!-- Post title -->
-						<h2 class="text-2xl font-semibold tracking-tight mb-2 group-hover:text-gray-600 transition-colors">
+						<!-- TYPOGRAPHY: Larger post titles (text-3xl) for more hierarchy -->
+						<h2 class="text-3xl font-semibold tracking-tight mb-3 group-hover:text-gray-600 transition-colors">
 							{post.data.title}
 						</h2>
 
 						<!-- Date and tags -->
-						<div class="flex items-center gap-3 text-sm text-gray-500 mb-3">
+						<!-- SPACING: Slightly more margin (mb-4) -->
+						<div class="flex items-center gap-3 text-sm text-gray-500 mb-4">
 							<time datetime={post.data.pubDate.toISOString()}>
 								{formatDate(post.data.pubDate)}
 							</time>
@@ -56,7 +66,8 @@ function formatDate(date: Date): string {
 						</div>
 
 						<!-- Description/excerpt -->
-						<p class="text-gray-700 leading-relaxed">
+						<!-- TYPOGRAPHY: Larger description text (text-lg) -->
+						<p class="text-lg text-gray-700 leading-relaxed">
 							{post.data.description}
 						</p>
 					</a>
