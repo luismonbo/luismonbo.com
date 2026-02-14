@@ -1,0 +1,100 @@
+---
+// Dynamic route for individual photo essays
+// [slug].astro creates routes like /photography/rome-in-winter
+
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+// getStaticPaths() tells Astro which pages to generate at build time
+export async function getStaticPaths() {
+  const essays = await getCollection('photography');
+  const publishedEssays = essays.filter(essay => !essay.data.draft);
+
+  return publishedEssays.map(essay => ({
+    params: { slug: essay.slug },
+    props: { essay },
+  }));
+}
+
+const { essay } = Astro.props;
+const { Content } = await essay.render();
+
+// Format date for display (e.g., "January 15, 2026")
+const formattedDate = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+}).format(essay.data.pubDate);
+
+// Build the metadata line: location · camera · film
+// filter(Boolean) removes any undefined/empty values
+const metaParts = [essay.data.location, essay.data.camera, essay.data.film].filter(Boolean);
+const metaLine = metaParts.join(' · ');
+---
+
+<Layout
+  title={`${essay.data.title} · luismonbo`}
+  description={essay.data.caption}
+  image={essay.data.coverImage}
+>
+  <article class="max-w-none">
+    <!-- Cover image — breaks out to full viewport width -->
+    <!-- Same breakout technique as the carousel: w-screen + left-1/2 + -translate-x-1/2 -->
+    <div class="w-screen relative left-1/2 -translate-x-1/2 mb-12">
+      <img
+        src={essay.data.coverImage}
+        alt={essay.data.title}
+        class="w-full max-h-[70vh] object-cover"
+      />
+    </div>
+
+    <!-- Metadata block — stays within narrow column (inherited max-w-3xl) -->
+    <header class="mb-12">
+      <h1 class="text-5xl font-bold tracking-tight leading-tight mb-4">
+        {essay.data.title}
+      </h1>
+
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-base text-gray-500">
+        <time datetime={essay.data.pubDate.toISOString()}>
+          {formattedDate}
+        </time>
+
+        {metaLine && (
+          <>
+            <span class="text-gray-300">·</span>
+            <span>{metaLine}</span>
+          </>
+        )}
+      </div>
+    </header>
+
+    <!-- Essay body — prose stays narrow, images break out wider -->
+    <div class="prose prose-lg prose-gray max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-gray-900 prose-a:underline hover:prose-a:text-gray-600 prose-strong:text-gray-900 photo-essay-prose">
+      <Content />
+    </div>
+  </article>
+
+  <!-- Back link -->
+  <div class="mt-16 pt-8 border-t border-gray-100">
+    <a
+      href="/photography"
+      class="text-base text-gray-500 hover:text-gray-900 transition-colors"
+    >
+      ← Back to photography
+    </a>
+  </div>
+</Layout>
+
+<!-- Style for breakout images within prose -->
+<!-- Targets img elements inside the photo-essay-prose container -->
+<!-- Images break out to max-w-5xl while text stays at max-w-3xl -->
+<style>
+  .photo-essay-prose :global(img) {
+    max-width: 64rem;
+    width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+</style>

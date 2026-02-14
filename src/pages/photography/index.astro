@@ -2,8 +2,8 @@
 // Photography page — displays a carousel of photo essays
 // getCollection fetches all entries from the 'photography' content collection
 import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
-import PhotoCarousel from '../components/PhotoCarousel.astro';
+import Layout from '../../layouts/Layout.astro';
+import PhotoCarousel from '../../components/PhotoCarousel.astro';
 
 // Get all published photo essays, sorted by date (newest first)
 const allEssays = await getCollection('photography');
