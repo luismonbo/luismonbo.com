@@ -1,0 +1,194 @@
+---
+// PhotoCarousel.astro — full-width auto-scrolling photo carousel
+// Receives photo essay data and renders a cinematic carousel with:
+// - CSS scroll-snap for smooth snapping
+// - Auto-scroll every 5s (pauses on hover)
+// - Arrow navigation + dot indicators
+// - Hover overlay showing title + caption
+
+// Props interface — the component expects an array of essay objects
+// Each essay has the frontmatter data + a slug for linking
+interface PhotoEssay {
+  slug: string;
+  data: {
+    title: string;
+    caption: string;
+    coverImage: string;
+  };
+}
+
+interface Props {
+  essays: PhotoEssay[];
+}
+
+const { essays } = Astro.props;
+---
+
+<!-- Carousel wrapper — breaks out of max-w-3xl to full viewport width -->
+<!-- w-screen + left-1/2 + -translate-x-1/2 is the standard breakout technique -->
+<div class="relative w-screen left-1/2 -translate-x-1/2" data-carousel>
+  <!-- Scrollable track — horizontal scroll with snap behavior -->
+  <div
+    class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+    data-carousel-track
+  >
+    {essays.map((essay) => (
+      <a
+        href={`/photography/${essay.slug}`}
+        class="group relative flex-none w-[90vw] mx-[5vw] first:ml-[5vw] last:mr-[5vw] snap-center aspect-[16/10] overflow-hidden"
+        data-carousel-slide
+      >
+        <img
+          src={essay.data.coverImage}
+          alt={essay.data.title}
+          class="w-full h-full object-cover"
+          loading="lazy"
+        />
+
+        <!-- Hover overlay — gradient + text at bottom -->
+        <!-- opacity-100 on mobile (no hover), md:opacity-0 fades in on hover -->
+        <div class="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div class="p-6 md:p-8">
+            <h3 class="text-2xl font-semibold text-white mb-1">
+              {essay.data.title}
+            </h3>
+            <p class="text-base text-gray-200">
+              {essay.data.caption}
+            </p>
+          </div>
+        </div>
+      </a>
+    ))}
+  </div>
+
+  <!-- Arrow buttons — visible on md+, hidden on mobile (touch swipe sufficient) -->
+  <button
+    class="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/40 transition-colors"
+    data-carousel-prev
+    aria-label="Previous photo"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+    </svg>
+  </button>
+
+  <button
+    class="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/40 transition-colors"
+    data-carousel-next
+    aria-label="Next photo"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+    </svg>
+  </button>
+
+  <!-- Dot indicators -->
+  <div class="flex justify-center gap-2 mt-4" data-carousel-dots>
+    {essays.map((_, i) => (
+      <button
+        class={`w-2 h-2 rounded-full transition-colors ${i === 0 ? 'bg-gray-900' : 'bg-gray-300'}`}
+        data-carousel-dot={i}
+        aria-label={`Go to photo ${i + 1}`}
+      />
+    ))}
+  </div>
+</div>
+
+<script>
+  const carousel = document.querySelector('[data-carousel]') as HTMLElement;
+  const track = document.querySelector('[data-carousel-track]') as HTMLElement;
+  const slides = document.querySelectorAll('[data-carousel-slide]');
+  const dots = document.querySelectorAll('[data-carousel-dot]');
+  const prevBtn = document.querySelector('[data-carousel-prev]') as HTMLButtonElement;
+  const nextBtn = document.querySelector('[data-carousel-next]') as HTMLButtonElement;
+
+  const INTERVAL_MS = 5000;
+  let currentIndex = 0;
+  let autoScrollTimer: ReturnType<typeof setInterval> | null = null;
+
+  function scrollToSlide(index: number) {
+    if (index < 0) index = slides.length - 1;
+    if (index >= slides.length) index = 0;
+    currentIndex = index;
+
+    const slide = slides[currentIndex] as HTMLElement;
+    slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    updateDots();
+  }
+
+  function updateDots() {
+    dots.forEach((dot, i) => {
+      if (i === currentIndex) {
+        dot.classList.remove('bg-gray-300');
+        dot.classList.add('bg-gray-900');
+      } else {
+        dot.classList.remove('bg-gray-900');
+        dot.classList.add('bg-gray-300');
+      }
+    });
+  }
+
+  function startAutoScroll() {
+    stopAutoScroll();
+    autoScrollTimer = setInterval(() => {
+      scrollToSlide(currentIndex + 1);
+    }, INTERVAL_MS);
+  }
+
+  function stopAutoScroll() {
+    if (autoScrollTimer) {
+      clearInterval(autoScrollTimer);
+      autoScrollTimer = null;
+    }
+  }
+
+  prevBtn?.addEventListener('click', () => {
+    scrollToSlide(currentIndex - 1);
+    startAutoScroll();
+  });
+
+  nextBtn?.addEventListener('click', () => {
+    scrollToSlide(currentIndex + 1);
+    startAutoScroll();
+  });
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      scrollToSlide(i);
+      startAutoScroll();
+    });
+  });
+
+  carousel?.addEventListener('mouseenter', stopAutoScroll);
+  carousel?.addEventListener('mouseleave', startAutoScroll);
+
+  // Update dots when user scrolls manually (touch swipe)
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = Array.from(slides).indexOf(entry.target as Element);
+          if (index !== -1) {
+            currentIndex = index;
+            updateDots();
+          }
+        }
+      });
+    },
+    { root: track, threshold: 0.5 }
+  );
+
+  slides.forEach((slide) => observer.observe(slide));
+
+  startAutoScroll();
+</script>
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+</style>
